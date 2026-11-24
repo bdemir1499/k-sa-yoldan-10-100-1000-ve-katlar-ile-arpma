@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kısa Yoldan Çarpma ve Problemler Atölyesi • S.123-128</title>
+    <style>
+        :root {
+            /* Geombala Pastel & Canlı Renk Paleti */
+            --geo-cyan: #00b4cc;
+            --geo-cyan-dark: #008ca0;
+            --geo-teal: #14b8a6;
+            --geo-teal-dark: #0f766e;
+            --geo-pink: #f06292;
+            --geo-pink-dark: #c2185b;
+            --geo-yellow: #ffca28;
+            --geo-yellow-dark: #d98a00;
+            --dark: #1e3a5f;
+            --panel-bg: rgba(255, 255, 255, 0.96);
+            --success: #16a34a;
+            --danger: #e11d48;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #b8eef2 0%, #d4effc 48%, #f8d8ea 100%);
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* ARKA PLAN PASTEL DEKOR */
+        .bg-bubbles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bottom-stripe {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 36px;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(0, 180, 204, 0.12) 0px, rgba(0, 180, 204, 0.12) 24px,
+                rgba(240, 98, 146, 0.12) 24px, rgba(240, 98, 146, 0.12) 48px
+            );
+            border-top: 3px solid rgba(255, 255, 255, 0.65);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        /* ÜST HUD (İSİM KUTUSU TAM ORTADA) */
+        .top-hud {
+            width: calc(100% - 14px);
+            max-width: 1380px;
+            padding: 5px 0 3px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 8px;
+            z-index: 15;
+            flex-shrink: 0;
+        }
+        .hud-left {
+            grid-column: 1;
+            justify-self: start;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .creator-pill {
+            grid-column: 2;
+            justify-self: center;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 2.5px dashed var(--geo-cyan);
+            border-radius: 22px;
+            padding: 3px 14px;
+            box-shadow: 0 3px 10px rgba(0, 180, 204, 0.16);
+        }
+        .creator-name { font-weight: 900; font-size: clamp(12.5px, 1.45vw, 15.5px); color: var(--dark); white-space: nowrap; }
+        .creator-insta {
+            background: linear-gradient(90deg, #f472b6, #ec4899);
+            color: #fff;
+            text-decoration: none;
+            font-size: clamp(11px, 1.25vw, 13px);
+            font-weight: 800;
+            padding: 2px 9px;
+            border-radius: 14px;
+            box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+            white-space: nowrap;
+        }
+        .hud-right {
+            grid-column: 3;
+            justify-self: end;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hud-chip {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--dark);
+            border: 2.5px solid var(--geo-cyan);
+            border-radius: 15px;
+            padding: 3px 11px;
+            font-size: clamp(12px, 1.35vw, 14.5px);
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 3px 0 rgba(0, 140, 160, 0.28);
+            white-space: nowrap;
+        }
+        .hud-chip span { color: var(--geo-pink-dark); }
+        .btn-sound {
+            background: #ffffff;
+            color: var(--geo-cyan-dark);
+            border: 2.5px solid var(--geo-cyan);
+            border-radius: 12px;
+            width: 31px;
+            height: 31px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 0 rgba(0, 140, 160, 0.28);
+            flex-shrink: 0;
+        }
+
+        /* 4 SAYFA SEKMESİ (S.123 • S.126 • S.127 • S.128) */
+        .page-tabs {
+            width: calc(100% - 14px);
+            max-width: 1380px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+            margin-bottom: 5px;
+            z-index: 15;
+            flex-shrink: 0;
+        }
+        .page-tab {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2.5px solid var(--geo-cyan);
+            border-radius: 12px;
+            padding: 5px 7px;
+            font-size: clamp(11.5px, 1.3vw, 14.5px);
+            font-weight: 900;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 3px 0 var(--geo-cyan-dark);
+            transition: all 0.14s;
+            white-space: nowrap;
+        }
+        .page-tab.active {
+            background: linear-gradient(180deg, #ffd54f 0%, #ffb300 100%);
+            color: #1e293b;
+            border-color: #ffe082;
+            box-shadow: 0 3px 0 #d98a00;
+        }
+        .tab-badge {
+            background: rgba(0, 180, 204, 0.15);
+            color: var(--geo-cyan-dark);
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+        .page-tab.active .tab-badge {
+            background: rgba(255, 255, 255, 0.6);
+            color: #78350f;
+        }
+
+        /* ANA OYUN KABUĞU */
+        #stage-shell {
+            width: calc(100% - 14px);
+            max-width: 1380px;
+            flex: 1 1 auto;
+            min-height: 0;
+            margin-bottom: 6px;
+            background: var(--panel-bg);
+            border: 3.5px solid var(--geo-cyan);
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(0, 140, 160, 0.18), 0 4px 0 var(--geo-cyan-dark);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+        }
+
+        /* MERKEZİ FİLİGRAN */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: clamp(24px, 4.8vw, 56px);
+            font-weight: 900;
+            color: rgba(0, 180, 204, 0.055);
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+
+        .stage-head {
+            background: linear-gradient(90deg, #00acc1 0%, #1ec4d6 60%, #26c6da 100%);
+            color: #fff;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 3px solid var(--geo-yellow);
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .head-title {
+            font-size: clamp(13.5px, 1.5vw, 18.5px);
+            font-weight: 900;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            text-shadow: 0 1px 3px rgba(0, 80, 95, 0.25);
+        }
+        #stage-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .page-pill {
+            background: linear-gradient(90deg, #f472b6, #ec4899);
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 900;
+            border: 1.5px solid rgba(255, 255, 255, 0.75);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .head-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .nav-mini {
+            background: rgba(255, 255, 255, 0.22);
+            border: 1.5px solid rgba(255, 255, 255, 0.65);
+            color: #fff;
+            border-radius: 9px;
+            padding: 4px 10px;
+            font-size: 12.5px;
+            font-weight: 900;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .nav-mini:disabled { opacity: 0.4; cursor: default; }
+
+        .progress-track {
+            width: 100%;
+            height: 5px;
+            background: #e0f7fa;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f472b6, #ffca28, #14b8a6);
+            transition: width 0.3s ease;
+        }
+
+        /* İÇERİK GÖVDESİ */
+        .stage-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding: clamp(5px, 0.9vh, 10px) clamp(8px, 1.4vw, 16px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(5px, 0.85vh, 9px);
+            z-index: 2;
+        }
+
+        /* SENARYO KARTI */
+        .scenario-card {
+            width: 100%;
+            max-width: 1080px;
+            background: linear-gradient(135deg, #f0fcff 0%, #fff4f9 100%);
+            border: 2.5px solid var(--geo-cyan);
+            border-left: 6px solid var(--geo-pink);
+            border-radius: 12px;
+            padding: clamp(6px, 0.9vh, 9px) 12px;
+            box-shadow: 0 3px 10px rgba(0, 180, 204, 0.1);
+            flex-shrink: 0;
+        }
+        .scenario-text {
+            font-size: clamp(13px, 1.35vw, 16.5px);
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.35;
+        }
+        .scenario-text b { color: #007c91; font-weight: 900; }
+
+        /* SAYFA 123: KISA YOLDAN ÇARPMA ANİMASYON SAHNESİ */
+        .shortmul-stage {
+            width: 100%;
+            max-width: 1080px;
+            background: linear-gradient(180deg, #f0fcff 0%, #ffffff 60%, #fff5f9 100%);
+            border: 3px solid var(--geo-cyan);
+            border-radius: 14px;
+            padding: 7px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            box-shadow: inset 0 0 18px rgba(0, 180, 204, 0.08);
+            flex-shrink: 0;
+        }
+
+        .phase-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+        .phase-pill {
+            font-size: clamp(11px, 1.15vw, 13px);
+            font-weight: 900;
+            padding: 2px 10px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            color: #64748b;
+            border: 2px solid transparent;
+            transition: all 0.25s ease;
+        }
+        .phase-pill.active {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #f59e0b;
+            transform: scale(1.03);
+        }
+        .phase-pill.done {
+            background: #dcfce7;
+            color: #15803d;
+            border-color: #16a34a;
+        }
+
+        .anim-board-svg {
+            width: 100%;
+            max-width: 560px;
+            max-height: clamp(105px, 21vh, 152px);
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            overflow: visible;
+        }
+
+        /* ANİMASYONLU YUVARLAK, EĞRİ OK VE SIFIR ÇİZME */
+        .zero-dim {
+            opacity: 0.28;
+            transition: opacity 0.35s ease;
+        }
+        .circle-draw {
+            fill: rgba(255, 202, 40, 0.16);
+            stroke-dasharray: 520;
+            stroke-dashoffset: 520;
+            animation: drawRing 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .circle-static {
+            fill: rgba(255, 202, 40, 0.16);
+        }
+        @keyframes drawRing {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .arc-arrow-draw {
+            stroke-dasharray: 420;
+            stroke-dashoffset: 420;
+            animation: drawArc 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes drawArc {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .arc-head-pop {
+            transform-box: fill-box;
+            transform-origin: center;
+            opacity: 0;
+            animation: popHead 0.35s 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popHead {
+            0% { transform: scale(0.2); opacity: 0; }
+            100% { transform: scale(1.12); opacity: 1; }
+        }
+
+        .zero-strike-draw {
+            stroke-dasharray: 160;
+            stroke-dashoffset: 160;
+            animation: drawStrike 0.45s ease-out forwards;
+        }
+        @keyframes drawStrike {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .result-zeros-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* ETKİNLİK 1 ÖRNEK KUTULARI */
+        .examples-dual {
+            width: 100%;
+            max-width: 1080px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .ex-card {
+            background: #e0f7fa;
+            border: 2px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .ex-item-btn {
+            background: #ffffff;
+            border: 2px solid #80deea;
+            border-radius: 9px;
+            padding: 4px 9px;
+            font-size: clamp(12px, 1.25vw, 14.5px);
+            font-weight: 800;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.14s;
+        }
+        .ex-item-btn:hover { background: #fffbeb; border-color: #f59e0b; }
+        .ex-item-btn.active-ex {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+        }
+
+        /* 2 SÜTUNLU PROBLEM ÇALIŞMA ALANI (S.126 - S.128) */
+        .workspace-grid {
+            width: 100%;
+            max-width: 1080px;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .model-box {
+            background: linear-gradient(180deg, #e5fafe 0%, #f5fbff 60%, #fff1f7 100%);
+            border: 3px solid var(--geo-cyan);
+            border-radius: 15px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .right-box {
+            background: #ffffff;
+            border: 2.5px solid #80deea;
+            border-radius: 15px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        /* KİTAP TABLOSU STİLİ (PROBLEM 14 & 18) */
+        .book-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            font-size: clamp(13px, 1.35vw, 15.5px);
+            font-weight: 800;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+        }
+        .book-table th {
+            background: linear-gradient(90deg, #00acc1, #14b8a6);
+            color: #ffffff;
+            padding: 6px 10px;
+            text-align: center;
+        }
+        .book-table td {
+            background: #fffbeb;
+            color: var(--dark);
+            padding: 6px 10px;
+            text-align: center;
+            border-top: 1.5px solid #fde68a;
+        }
+
+        /* ŞUBAT 2024 İNTERAKTİF TAKVİMİ (PROBLEM 16) */
+        .calendar-card {
+            width: 100%;
+            max-width: 340px;
+            background: #ffffff;
+            border: 3px solid #1e3a5f;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.14);
+        }
+        .cal-head {
+            background: linear-gradient(90deg, #0284c7, #00b4cc);
+            color: #ffffff;
+            padding: 7px 14px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 900;
+            font-size: 16px;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            padding: 8px;
+            text-align: center;
+        }
+        .cal-dow {
+            font-size: 11.5px;
+            font-weight: 900;
+            color: #475569;
+            padding-bottom: 4px;
+        }
+        .cal-dow.wknd { color: #0284c7; }
+        .cal-day {
+            height: 31px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #1e293b;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.14s;
+        }
+        .cal-day.empty { cursor: default; }
+        .cal-day:not(.empty):hover { background: #e0f2fe; }
+        .cal-day.given {
+            border-color: #dc2626;
+            background: #fef2f2;
+            color: #b91c1c;
+            cursor: default;
+        }
+        .cal-day.marked {
+            border-color: #16a34a;
+            background: #dcfce7;
+            color: #15803d;
+            animation: popIn 0.25s ease;
+        }
+        .cal-day.wrong-day {
+            background: #fecaca !important;
+            border-color: #dc2626 !important;
+            animation: shake 0.35s;
+        }
+
+        /* ALT SORULAR & SEÇENEK BUTONLARI */
+        .steps-stack {
+            width: 100%;
+            max-width: 1080px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .sub-step {
+            background: #f5fdff;
+            border: 2px dashed #4dd0e1;
+            border-radius: 12px;
+            padding: 9px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            transition: all 0.25s;
+        }
+        .sub-step.locked { opacity: 0.42; pointer-events: none; }
+        .sub-step.solved { background: #ecfdf5; border-style: solid; border-color: #10b981; }
+        .sub-q {
+            font-size: clamp(14px, 1.45vw, 17px);
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.35;
+        }
+
+        .choice-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .choice-btn {
+            flex: 1 1 130px;
+            background: #ffffff;
+            border: 2.5px solid var(--geo-cyan);
+            border-radius: 11px;
+            padding: 8px 10px;
+            font-size: clamp(14px, 1.48vw, 17.5px);
+            font-weight: 900;
+            color: var(--dark);
+            cursor: pointer;
+            box-shadow: 0 3.5px 0 var(--geo-cyan-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 5px;
+            transition: all 0.12s;
+        }
+        .choice-btn:hover { background: #f0fcff; transform: translateY(-1px); }
+        .choice-btn:active { transform: translateY(3px); box-shadow: none; }
+        .choice-btn.correct { background: #14b8a6; border-color: #0f766e; color: #fff; box-shadow: 0 3.5px 0 #0f766e; }
+        .choice-btn.wrong { background: var(--danger); border-color: #be123c; color: #fff; box-shadow: 0 3.5px 0 #be123c; animation: shake 0.35s; }
+
+        /* KONTROL BUTONLARI */
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+        }
+        .btn-action {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 11px;
+            font-size: clamp(13px, 1.35vw, 15.5px);
+            font-weight: 900;
+            cursor: pointer;
+            background: linear-gradient(180deg, #ffd54f, #ffb300);
+            color: #1e293b;
+            box-shadow: 0 3.5px 0 #d98a00;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: transform 0.1s;
+        }
+        .btn-action:active { transform: translateY(3px); box-shadow: none; }
+        .btn-action:disabled { opacity: 0.45; cursor: default; transform: none; }
+        .btn-action.green { background: linear-gradient(180deg, #17bfa9, #0e9f8e); color: #fff; box-shadow: 0 3.5px 0 #0a7367; }
+        .btn-action.teal { background: linear-gradient(180deg, #26c6da, #00acc1); color: #fff; box-shadow: 0 3.5px 0 #007c91; }
+        .btn-action.pink { background: linear-gradient(180deg, #f472b6, #ec4899); color: #fff; box-shadow: 0 3.5px 0 #be185d; }
+        .btn-action.gray { background: linear-gradient(180deg, #94a3b8, #64748b); color: #fff; box-shadow: 0 3.5px 0 #475569; }
+
+        /* KONTROLLÜ ALT AKSİYON ÇUBUĞU */
+        .post-bar {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            flex-shrink: 0;
+            animation: popIn 0.28s ease;
+        }
+        .post-bar.visible { display: flex; }
+
+        /* BİLGİ KUTUSU MODALI */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(18, 60, 78, 0.58);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-card {
+            background: #ffffff;
+            border: 4px dashed var(--geo-cyan);
+            border-radius: 22px;
+            padding: 22px 20px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 18px 45px rgba(0, 124, 145, 0.32);
+            animation: popIn 0.3s ease;
+        }
+        .modal-card h3 { color: var(--geo-cyan-dark); font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+        .modal-card p { color: var(--dark); font-size: 16.5px; font-weight: 700; line-height: 1.55; margin-bottom: 18px; }
+        .modal-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+        /* TOAST */
+        #toast {
+            position: fixed;
+            top: 54px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 160;
+            background: #008ca0;
+            border: 2.5px solid #ffd54f;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 24px;
+            font-size: clamp(13px, 1.5vw, 15.5px);
+            font-weight: 800;
+            box-shadow: 0 8px 22px rgba(0, 124, 145, 0.3);
+            transition: all 0.25s ease;
+            text-align: center;
+            max-width: 90vw;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.ok { background: #14b8a6; border-color: #ffffff; }
+        #toast.err { background: #e11d48; border-color: #fbcfe8; }
+
+        @keyframes popIn { 0% { transform: scale(0.86); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+        /* MOBİL VE TABLET UYUMU */
+        @media (max-width: 860px) {
+            .workspace-grid, .examples-dual { grid-template-columns: 1fr; }
+            .page-tab span.t-txt { display: none; }
+        }
+        @media (max-width: 680px) {
+            .top-hud { grid-template-columns: 1fr 1fr; row-gap: 4px; }
+            .creator-pill { grid-column: 1 / -1; grid-row: 1; }
+            .hud-left { grid-column: 1; grid-row: 2; }
+            .hud-right { grid-column: 2; grid-row: 2; }
+            .head-title { font-size: 13px; }
+            .nav-mini { padding: 3px 8px; font-size: 11.5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ARKA PLAN PASTEL DEKOR -->
+    <svg class="bg-bubbles" viewBox="0 0 1200 700" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g opacity="0.28">
+            <circle cx="90" cy="115" r="44" fill="#ffffff"/>
+            <circle cx="1110" cy="130" r="56" fill="#ffffff"/>
+            <circle cx="155" cy="595" r="38" fill="#f472b6" opacity="0.35"/>
+            <circle cx="1055" cy="580" r="48" fill="#26c6da" opacity="0.35"/>
+            <circle cx="610" cy="75" r="24" fill="#ffca28" opacity="0.4"/>
+        </g>
+    </svg>
+    <div class="bottom-stripe"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ÜST HUD (İSİM KUTUSU TAM ORTADA) -->
+    <div class="top-hud">
+        <div class="hud-left">
+            <div class="hud-chip">🏆 Adım: <span id="hud-step">1/23</span></div>
+        </div>
+        <div class="creator-pill">
+            <span class="creator-name">Bekir DEMİREL</span>
+            <a class="creator-insta" href="https://instagram.com/matejital_mt25" target="_blank" rel="noopener">@matejital_mt25 ✔</a>
+        </div>
+        <div class="hud-right">
+            <div class="hud-chip">⭐ Puan: <span id="hud-score">0</span></div>
+            <button class="btn-sound" id="sound-btn" title="Sesi Aç/Kapat">🔊</button>
+        </div>
+    </div>
+
+    <!-- 4 SAYFA SEKMESİ (SAYFA SIRASINA GÖRE) -->
+    <div class="page-tabs">
+        <button class="page-tab active" id="tab-p123" onclick="jumpStep(0)">⚡ <span class="t-txt">Kısa Yoldan Çarpma</span> <span class="tab-badge">S.123</span></button>
+        <button class="page-tab" id="tab-p126" onclick="jumpStep(16)">👟 <span class="t-txt">Prob. 13 &amp; 14</span> <span class="tab-badge">S.126</span></button>
+        <button class="page-tab" id="tab-p127" onclick="jumpStep(18)">🫒 <span class="t-txt">Prob. 15 &amp; 16</span> <span class="tab-badge">S.127</span></button>
+        <button class="page-tab" id="tab-p128" onclick="jumpStep(20)">📚 <span class="t-txt">Prob. 17 &amp; 18</span> <span class="tab-badge">S.128</span></button>
+    </div>
+
+    <!-- ANA OYUN SAHNESİ -->
+    <div id="stage-shell">
+        <div class="watermark">@matejital_mt25 • Bekir DEMİREL</div>
+
+        <div class="stage-head">
+            <div class="head-title">
+                <span id="stage-title">Etkinlik 1 • Kısa Yoldan Çarpma İşlemi</span>
+                <span class="page-pill" id="stage-page">Sayfa 123</span>
+            </div>
+            <div class="head-nav">
+                <button class="nav-mini" id="btn-prev" onclick="prevStep()">◀️ Önceki</button>
+                <button class="nav-mini" id="btn-next" onclick="nextStep()">Sonraki ▶️</button>
+            </div>
+        </div>
+        <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+
+        <div class="stage-body" id="stage-body"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast">Bildirim</div>
+
+    <!-- KONTROLLÜ BİLGİ KUTUSU MODALI -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal-card">
+            <h3>💡 Bilgi Kutusu</h3>
+            <p id="info-modal-text">...</p>
+            <div class="modal-btns">
+                <button class="btn-action gray" onclick="closeInfoModal()">Kapat ✖</button>
+                <button class="btn-action green" id="info-modal-next" onclick="closeInfoModal(); nextStep();">Sonraki Adım ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // NEŞELİ SES MOTORU (WEB AUDIO API)
+        // ==========================================
+        let audioCtx = null;
+        let soundOn = true;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        document.getElementById('sound-btn').addEventListener('click', () => {
+            soundOn = !soundOn;
+            document.getElementById('sound-btn').innerText = soundOn ? '🔊' : '🔇';
+        });
+
+        function playSound(type) {
+            if (!soundOn) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                if (type === 'fanfare') {
+                    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(f, now + i * 0.075);
+                        g.gain.setValueAtTime(0.22, now + i * 0.075);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.075 + 0.28);
+                        o.start(now + i * 0.075); o.stop(now + i * 0.075 + 0.29);
+                    });
+                    return;
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+
+                if (type === 'swoosh') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(780, now + 0.16);
+                    gain.gain.setValueAtTime(0.14, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                    osc.start(now); osc.stop(now + 0.19);
+                } else if (type === 'tick') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(840, now + 0.045);
+                    gain.gain.setValueAtTime(0.11, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.055);
+                    osc.start(now); osc.stop(now + 0.06);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.setValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now); osc.stop(now + 0.26);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(210, now);
+                    osc.frequency.linearRampToValueAtTime(130, now + 0.24);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+                    osc.start(now); osc.stop(now + 0.27);
+                }
+            } catch (e) {}
+        }
+
+        function fmtInt(n) {
+            return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function splitTrailingZeros(num) {
+            const s = String(num);
+            const m = s.match(/^(\d*?[1-9])(0*)$/);
+            if (!m) return { base: s, zeros: '' };
+            return { base: m[1], zeros: m[2] };
+        }
+
+        // ==========================================
+        // SAYFA 123: ADIM ADIM TIKLAMALI KISA YOLDAN ÇARPMA SVG MOTORU
+        // ==========================================
+        function buildShortMulSVG(a, b, phase) {
+            // phase: 0 = ham işlem, 1 = 0'lar yok sayıldı, 2 = yuvarlaklar çizildi,
+            // 3 = eğri ok gitti & sıfırsız çarpım (ör. 64) yazıldı, 4 = 0'lar sona eklendi (ör. 640)
+            const p1 = splitTrailingZeros(a);
+            const p2 = splitTrailingZeros(b);
+            const baseProd = Number(p1.base) * Number(p2.base);
+            const allZeros = p1.zeros + p2.zeros;
+            const fullProd = a * b;
+
+            const charW = 22;
+            const b1W = p1.base.length * charW;
+            const z1W = p1.zeros.length * charW;
+            const f1W = b1W + z1W;
+
+            const b2W = p2.base.length * charW;
+            const z2W = p2.zeros.length * charW;
+            const f2W = b2W + z2W;
+
+            const resText = phase >= 4 ? fmtInt(fullProd) : (phase === 3 ? fmtInt(baseProd) : '?');
+            const resW = phase >= 3 ? Math.max(76, resText.length * 20) : 58;
+
+            const gapOp = 46;
+            const totalW = f1W + gapOp + f2W + gapOp + resW;
+            const startX = Math.max(24, (700 - totalW) / 2);
+            const cy = 114;
+
+            const x1BaseCenter = startX + b1W / 2;
+            const x1ZeroStart = startX + b1W;
+            const xOp = startX + f1W + gapOp / 2;
+            const x2Start = startX + f1W + gapOp;
+            const x2BaseCenter = x2Start + b2W / 2;
+            const x2ZeroStart = x2Start + b2W;
+            const xEq = x2Start + f2W + gapOp / 2;
+            const xResStart = x2Start + f2W + gapOp;
+            const xResCenter = xResStart + resW / 2;
+
+            const rx1 = Math.max(25, b1W / 2 + 12);
+            const ry1 = 27;
+            const rx2 = Math.max(25, b2W / 2 + 12);
+            const ry2 = 27;
+
+            // İlk çarpandan ikinci çarpana giden eğri ok
+            const arcX1 = x1BaseCenter;
+            const arcY1 = cy - ry1 - 4;
+            const arcX2 = x2BaseCenter;
+            const arcY2 = cy - ry2 - 6;
+            const arcMidX = (arcX1 + arcX2) / 2;
+            const arcCtrlY = Math.max(14, arcY1 - Math.min(72, Math.max(46, (arcX2 - arcX1) * 0.34)));
+
+            const animStrike = (phase === 1);
+            const animCircle = (phase === 2);
+            const animArc = (phase === 3);
+
+            let svg = `<svg class="anim-board-svg" viewBox="0 0 700 182" xmlns="http://www.w3.org/2000/svg">`;
+
+            // Faz 2+: İlk çarpanın tamamı (sıfırsız kısmı) ve ikinci çarpanın sıfırsız kısmı YUVARLAK içinde
+            if (phase >= 2) {
+                const cCls = animCircle ? 'circle-draw' : 'circle-static';
+                svg += `<ellipse class="${cCls}" cx="${x1BaseCenter}" cy="${cy - 4}" rx="${rx1}" ry="${ry1}" stroke="#00acc1" stroke-width="4"/>`;
+                svg += `<ellipse class="${cCls}" cx="${x2BaseCenter}" cy="${cy - 4}" rx="${rx2}" ry="${ry2}" stroke="#ec4899" stroke-width="4" ${animCircle ? 'style="animation-delay:0.18s;"' : ''}/>`;
+            }
+
+            // Faz 3+: İlk çarpandan ikinci çarpana EĞRİ OK
+            if (phase >= 3) {
+                const aCls = animArc ? 'arc-arrow-draw' : '';
+                const hCls = animArc ? 'arc-head-pop' : '';
+                svg += `<path class="${aCls}" d="M ${arcX1} ${arcY1} Q ${arcMidX} ${arcCtrlY} ${arcX2} ${arcY2}" fill="none" stroke="#f59e0b" stroke-width="4.5" stroke-linecap="round"/>`;
+                svg += `<polygon class="${hCls}" points="${arcX2 + 2},${arcY2 + 5} ${arcX2 - 12},${arcY2 - 7} ${arcX2 + 5},${arcY2 - 11}" fill="#f59e0b" stroke="#b45309" stroke-width="1"/>`;
+                const peakY = (arcY1 + 2 * arcCtrlY + arcY2) / 4;
+                svg += `<g class="${hCls}">
+                    <rect x="${arcMidX - 44}" y="${peakY - 17}" width="88" height="24" rx="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="2.2"/>
+                    <text x="${arcMidX}" y="${peakY}" text-anchor="middle" font-size="13.5" font-weight="900" fill="#b45309">${p1.base} × ${p2.base}</text>
+                </g>`;
+            }
+
+            // 1. Çarpan: Sıfırsız kısım
+            svg += `<text x="${x1BaseCenter}" y="${cy + 7}" text-anchor="middle" font-size="34" font-weight="900" fill="${phase >= 2 ? '#007c91' : '#1e3a5f'}">${p1.base}</text>`;
+
+            // 1. Çarpan: Sondaki sıfırlar (varsa)
+            if (p1.zeros.length > 0) {
+                const z1Center = x1ZeroStart + z1W / 2;
+                svg += `<text x="${z1Center}" y="${cy + 7}" text-anchor="middle" font-size="34" font-weight="900" fill="#1e3a5f" class="${phase >= 1 ? 'zero-dim' : ''}">${p1.zeros}</text>`;
+                if (phase >= 1) {
+                    svg += `<line class="${animStrike ? 'zero-strike-draw' : ''}" x1="${x1ZeroStart + 2}" y1="${cy + 10}" x2="${x1ZeroStart + z1W - 2}" y2="${cy - 18}" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>`;
+                }
+            }
+
+            // Çarpı
+            svg += `<text x="${xOp}" y="${cy + 6}" text-anchor="middle" font-size="32" font-weight="900" fill="#64748b">×</text>`;
+
+            // 2. Çarpan: Sıfırsız kısım
+            svg += `<text x="${x2BaseCenter}" y="${cy + 7}" text-anchor="middle" font-size="34" font-weight="900" fill="${phase >= 2 ? '#be185d' : '#1e3a5f'}">${p2.base}</text>`;
+
+            // 2. Çarpan: Sondaki sıfırlar
+            if (p2.zeros.length > 0) {
+                const z2Center = x2ZeroStart + z2W / 2;
+                svg += `<text x="${z2Center}" y="${cy + 7}" text-anchor="middle" font-size="34" font-weight="900" fill="#1e3a5f" class="${phase >= 1 ? 'zero-dim' : ''}">${p2.zeros}</text>`;
+                if (phase >= 1) {
+                    svg += `<line class="${animStrike ? 'zero-strike-draw' : ''}" x1="${x2ZeroStart + 2}" y1="${cy + 10}" x2="${x2ZeroStart + z2W - 2}" y2="${cy - 18}" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>`;
+                }
+            }
+
+            // Faz 1+: Yok sayılan sıfır sayacı (çakışmayı önlemek için eşittirin solunda hizalı)
+            if (phase >= 1 && allZeros.length > 0) {
+                const leftBadgeW = 128;
+                const exprMidX = (startX + x2Start + f2W) / 2;
+                const leftBadgeX = Math.max(8, Math.min(exprMidX - leftBadgeW / 2, xEq - 10 - leftBadgeW));
+                svg += `<rect x="${leftBadgeX}" y="${cy + 28}" width="${leftBadgeW}" height="23" rx="10" fill="#ffe4e6" stroke="#f43f5e" stroke-width="1.6"/>`;
+                svg += `<text x="${leftBadgeX + leftBadgeW / 2}" y="${cy + 43.5}" text-anchor="middle" font-size="11.5" font-weight="900" fill="#be123c">${allZeros.length} sıfır yok sayıldı!</text>`;
+            }
+
+            // Eşittir
+            svg += `<text x="${xEq}" y="${cy + 6}" text-anchor="middle" font-size="32" font-weight="900" fill="#64748b">=</text>`;
+
+            // Sonuç Alanı
+            if (phase === 3) {
+                // Önce sadece sıfırsız çarpım (ör. 64) yazılır
+                const rightBadgeW = Math.max(resW + 24, 132);
+                const rightBadgeX = Math.max(xEq + 10, xResCenter - rightBadgeW / 2);
+                svg += `<g class="result-zeros-pop">
+                    <rect x="${xResStart - 6}" y="${cy - 28}" width="${resW + 12}" height="48" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+                    <text x="${xResCenter}" y="${cy + 7}" text-anchor="middle" font-size="29" font-weight="900" fill="#b45309">${resText}</text>
+                    <rect x="${rightBadgeX}" y="${cy + 28}" width="${rightBadgeW}" height="23" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.6"/>
+                    <text x="${rightBadgeX + rightBadgeW / 2}" y="${cy + 43.5}" text-anchor="middle" font-size="11.5" font-weight="900" fill="#b45309">${p1.base} × ${p2.base} = ${resText}</text>
+                </g>`;
+            } else if (phase >= 4) {
+                // Son aşama: Sıfırlar en sona eklenir (ör. 640)
+                const rightBadgeW = Math.max(resW + 24, 146);
+                const rightBadgeX = Math.max(xEq + 10, xResCenter - rightBadgeW / 2);
+                svg += `<g class="result-zeros-pop">
+                    <rect x="${xResStart - 6}" y="${cy - 28}" width="${resW + 12}" height="48" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+                    <text x="${xResCenter}" y="${cy + 7}" text-anchor="middle" font-size="29" font-weight="900" fill="#15803d">${resText}</text>
+                    ${allZeros.length > 0 ? `
+                        <rect x="${rightBadgeX}" y="${cy + 28}" width="${rightBadgeW}" height="23" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+                        <text x="${rightBadgeX + rightBadgeW / 2}" y="${cy + 43.5}" text-anchor="middle" font-size="11.5" font-weight="900" fill="#15803d">+${allZeros.length} sıfır sona eklendi!</text>
+                    ` : ''}
+                </g>`;
+            } else {
+                svg += `<rect x="${xResStart - 4}" y="${cy - 26}" width="58" height="44" rx="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+                svg += `<text x="${xResStart + 25}" y="${cy + 7}" text-anchor="middle" font-size="30" font-weight="900" fill="#d97706">?</text>`;
+            }
+
+            svg += `</svg>`;
+            return svg;
+        }
+
+        // ==========================================
+        // TÜM SORULAR VERİTABANI (SAYFA 123 → 126 → 127 → 128 EKSİKSİZ 23 ADIM)
+        // ==========================================
+        const STEPS = [
+            // --- SAYFA 123: ETKİNLİK 1 (SORU 1, 2a-2e, 3) & ÖRNEK 1 (a-g) ---
+            {
+                id: 'e1_q1', tab: 'p123', page: 'Sayfa 123', type: 'e1_explore',
+                title: 'Etkinlik 1 • Soru 1: Kısa Yoldan Çarpma Keşfi',
+                note: `Harika! Sonunda sıfır bulunan sayıları kısa yoldan çarparken <b>sıfırlar yok sayılır</b>, kalan kısımlar çarpılır ve yok sayılan sıfırların tamamı <b>sonucun sağına eklenir</b>.`
+            },
+            { id: 'e1_2a', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (a): 3 × 20', a: 3, b: 20, opts: ['60', '600', '23'], note: '3 × 2 = 6, yanına 1 sıfır → <b>60</b>!' },
+            { id: 'e1_2b', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (b): 3 × 700', a: 3, b: 700, opts: ['210', '2 100', '21 000'], note: '3 × 7 = 21, yanına 2 sıfır → <b>2 100</b>!' },
+            { id: 'e1_2c', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (c): 3 × 9000', a: 3, b: 9000, opts: ['2 700', '27 000', '270 000'], note: '3 × 9 = 27, yanına 3 sıfır → <b>27 000</b>!' },
+            { id: 'e1_2ch', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (ç): 56 × 40', a: 56, b: 40, opts: ['2 240', '224', '22 400'], note: '56 × 4 = 224, yanına 1 sıfır → <b>2 240</b>!' },
+            { id: 'e1_2d', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (d): 56 × 200', a: 56, b: 200, opts: ['1 120', '11 200', '112 000'], note: '56 × 2 = 112, yanına 2 sıfır → <b>11 200</b>!' },
+            { id: 'e1_2e', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Etkinlik 1 • Soru 2 (e): 56 × 5000', a: 56, b: 5000, opts: ['28 000', '280 000', '2 800 000'], note: '56 × 5 = 280, yanına 3 sıfır → <b>280 000</b>!' },
+            {
+                id: 'e1_q3', tab: 'p123', page: 'Sayfa 123', type: 'quiz',
+                title: 'Etkinlik 1 • Soru 3: Yöntemin Sağladığı Kolaylık',
+                scenario: `<b>3)</b> Kısa yoldan yapılan çarpma işlemlerine ait yöntemlerin işlem yapmayı nasıl kolaylaştırdığını ifade ediniz.`,
+                q: `Aşağıdakilerden hangisi kısa yoldan çarpma yönteminin sağladığı en önemli kolaylıktır?`,
+                opts: [
+                    { k: 'A', t: 'Büyük sayılardaki sıfırlarla uzun alt alta çarpma yapmak yerine küçük sayıları hızla çarpıp sıfırları sona ekleyerek zamandan tasarruf sağlar ve hata riskini azaltır.' },
+                    { k: 'B', t: 'Sıfırları tamamen silerek sonucu daha küçük bir sayıya dönüştürür.' },
+                    { k: 'C', t: 'Sadece tek basamaklı sayılarda kullanıldığı için işlemi kısaltır.' }
+                ],
+                ans: 'A',
+                note: `Tebrikler! Kısa yoldan çarpma sayesinde zihinden çok daha hızlı ve hatasız hesap yapabiliriz. Şimdi <b>Örnek 1</b> sorularına geçelim!`
+            },
+            { id: 'o1_a', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (a): 2000 × 6', a: 2000, b: 6, opts: ['1 200', '12 000', '120 000'], note: '2 × 6 = 12, yanına 3 sıfır → <b>12 000</b>!' },
+            { id: 'o1_b', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (b): 25 × 30', a: 25, b: 30, opts: ['75', '750', '7 500'], note: '25 × 3 = 75, yanına 1 sıfır → <b>750</b>!' },
+            { id: 'o1_c', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (c): 60 × 200', a: 60, b: 200, opts: ['1 200', '12 000', '120 000'], note: '6 × 2 = 12, toplam 3 sıfır (1 + 2) → <b>12 000</b>!' },
+            { id: 'o1_ch', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (ç): 500 × 48', a: 500, b: 48, opts: ['2 400', '24 000', '240 000'], note: '5 × 48 = 240, yanına 2 sıfır → <b>24 000</b>!' },
+            { id: 'o1_d', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (d): 90 × 500', a: 90, b: 500, opts: ['4 500', '45 000', '450 000'], note: '9 × 5 = 45, toplam 3 sıfır (1 + 2) → <b>45 000</b>!' },
+            { id: 'o1_e', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (e): 102 × 70', a: 102, b: 70, opts: ['714', '7 140', '71 400'], note: '102 × 7 = 714 (aradaki 0 atılmaz!), sondaki 1 sıfır eklenir → <b>7 140</b>!' },
+            { id: 'o1_f', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (f): 58 × 3000', a: 58, b: 3000, opts: ['17 400', '174 000', '1 740 000'], note: '58 × 3 = 174, yanına 3 sıfır → <b>174 000</b>!' },
+            { id: 'o1_g', tab: 'p123', page: 'Sayfa 123', type: 'shortmul', title: 'Örnek 1 • (g): 172 × 300', a: 172, b: 300, opts: ['5 160', '51 600', '516 000'], note: '172 × 3 = 516, yanına 2 sıfır → <b>51 600</b>! Sayfa 123 tamamlandı!' },
+
+            // --- SAYFA 126: PROBLEM 13 & PROBLEM 14 ---
+            {
+                id: 'p13', tab: 'p126', page: 'Sayfa 126', type: 'prob13',
+                title: 'Problem 13: Ayakkabı Atölyesi (Tahmin & Gerçek Sonuç)',
+                note: `Harika! 98'i 100'e yuvarlayarak tahmin: <b>100 × 365 = 36 500 çift</b>. Gerçek sonuç: <b>98 × 365 = 35 770 çift</b>. Tahminimiz gerçek sonuçtan <b>730 çift</b> fazladır!`
+            },
+            {
+                id: 'p14', tab: 'p126', page: 'Sayfa 126', type: 'prob14',
+                title: 'Problem 14: Okul Bahçesine Fidan Dikme Kampanyası',
+                note: `Süper! Çam: 175 × 209 = <b>36 575 TL</b>, Elma: 30 × 315 = <b>9 450 TL</b>. Toplam gerçek ödeme: <b>46 025 TL</b>! (Yuvarlama tahmini: 180×200 + 30×300 = 45 000 TL)`
+            },
+
+            // --- SAYFA 127: PROBLEM 15 & PROBLEM 16 ---
+            {
+                id: 'p15', tab: 'p127', page: 'Sayfa 127', type: 'prob15',
+                title: 'Problem 15: Zeytin Bahçesi Hasadı',
+                note: `Harika! İlk 115 ağaçtan <b>115 × 40 = 4 600 kg</b>, kalan 35 ağaçtan <b>35 × 35 = 1 225 kg</b>. Toplam zeytin: <b>4 600 + 1 225 = 5 825 kg</b>!`
+            },
+            {
+                id: 'p16', tab: 'p127', page: 'Sayfa 127', type: 'prob16',
+                title: 'Problem 16: Şubat 2024 Damacana Su Siparişleri',
+                note: `Mükemmel! 3 günde bir sipariş verildiği için sipariş günleri: 4, 7, 10, 13 (4 gün × 80 TL = <b>320 TL</b>) ve zamlı 16, 19, 22, 25, 28 (5 gün × 85 TL = <b>425 TL</b>). Toplam ödeme: <b>745 TL</b>!`
+            },
+
+            // --- SAYFA 128: PROBLEM 17 & PROBLEM 18 (a-b) ---
+            {
+                id: 'p17', tab: 'p128', page: 'Sayfa 128', type: 'prob17',
+                title: 'Problem 17: Burak ve Merve\'nin Kitap Okuma Yarışı',
+                note: `Harika! Burak <b>1120 ÷ 35 = 32 günde</b>, Merve <b>945 ÷ 27 = 35 günde</b> bitirir. İlk bitiren <b>Burak (32 gün)</b>!`
+            },
+            {
+                id: 'p18a', tab: 'p128', page: 'Sayfa 128', type: 'prob18a',
+                title: 'Problem 18 (a): Süt Toplama Merkezi (1520 Litre)',
+                note: `Doğru! Günlük en çok süt sağan kişi <b>Havva (38 L)</b>'dır. 1520 ÷ 38 = <b>40 günde</b> tamamlar!`
+            },
+            {
+                id: 'p18b', tab: 'p128', page: 'Sayfa 128', type: 'prob18b',
+                title: 'Problem 18 (b): Tüm Çiftçiler Birlikte (5760 Litre)',
+                note: `🏆 Muhteşem! Dört kişinin günlük toplam sütü: 30 + 38 + 32 + 28 = <b>128 L</b>. 5760 ÷ 128 = <b>45 günde</b> tamamlarlar!`
+            }
+        ];
+
+        // ==========================================
+        // OYUN DURUMU
+        // ==========================================
+        let currentIdx = 0;
+        let score = 0;
+        let stepSolved = Array(STEPS.length).fill(false);
+        let currentModalNote = '';
+
+        // Sayfa 123 tıklamalı adım adım fazlar
+        let e1DemoPair = { a: 32, b: 20 };
+        let e1DemoPhase = 0; // 0..4
+        let animPhase = 0;   // 0..3
+        let autoArcTimer = null;
+
+        // Sayfa 126 - 128 problem durum değişkenleri
+        let p13Sub = 0;
+        let p14Planted = false;
+        let p14Sub = 0;
+        let p15HarvestA = false;
+        let p15HarvestB = false;
+        let p15Sub = 0;
+        const P16_GIVEN = [4, 7, 10, 13];
+        const P16_TARGETS = [16, 19, 22, 25, 28];
+        let p16Marked = [];
+        let p16Sub = 0;
+        let p17Sub = 0;
+        let p18aSub = 0;
+        let p18bTankFilled = false;
+
+        function clearAutoArcTimer() {
+            if (autoArcTimer) {
+                clearTimeout(autoArcTimer);
+                autoArcTimer = null;
+            }
+        }
+
+        function updateHUD() {
+            const st = STEPS[currentIdx];
+            document.getElementById('hud-step').innerText = `${currentIdx + 1}/${STEPS.length}`;
+            document.getElementById('hud-score').innerText = score;
+            document.getElementById('stage-title').innerText = st.title;
+            document.getElementById('stage-page').innerText = st.page;
+
+            const doneCnt = stepSolved.filter(Boolean).length;
+            document.getElementById('progress-bar').style.width = `${(doneCnt / STEPS.length) * 100}%`;
+
+            ['p123', 'p126', 'p127', 'p128'].forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if (el) el.classList.toggle('active', t === st.tab);
+            });
+
+            document.getElementById('btn-prev').disabled = (currentIdx === 0);
+            document.getElementById('btn-next').disabled = (currentIdx === STEPS.length - 1);
+        }
+
+        function jumpStep(idx) {
+            initAudio();
+            playSound('tick');
+            clearAutoArcTimer();
+            animPhase = 0;
+            currentIdx = Math.max(0, Math.min(STEPS.length - 1, idx));
+            renderStep(true);
+        }
+        function prevStep() { if (currentIdx > 0) jumpStep(currentIdx - 1); }
+        function nextStep() {
+            if (currentIdx < STEPS.length - 1) jumpStep(currentIdx + 1);
+            else showFinalCelebration();
+        }
+
+        // ==========================================
+        // ANA ADIM ÇİZİM MOTORU
+        // ==========================================
+        function renderStep(scrollToTop = false) {
+            updateHUD();
+            const st = STEPS[currentIdx];
+            const body = document.getElementById('stage-body');
+            const prevScroll = body.scrollTop;
+            body.innerHTML = '';
+
+            if (st.type === 'e1_explore') renderE1Explore(body, st);
+            else if (st.type === 'shortmul') renderShortMulStep(body, st);
+            else if (st.type === 'quiz') renderQuizStep(body, st);
+            else if (st.type === 'prob13') renderProb13(body, st);
+            else if (st.type === 'prob14') renderProb14(body, st);
+            else if (st.type === 'prob15') renderProb15(body, st);
+            else if (st.type === 'prob16') renderProb16(body, st);
+            else if (st.type === 'prob17') renderProb17(body, st);
+            else if (st.type === 'prob18a') renderProb18a(body, st);
+            else if (st.type === 'prob18b') renderProb18b(body, st);
+
+            body.scrollTop = scrollToTop ? 0 : prevScroll;
+        }
+
+        // ------------------------------------------
+        // 1) SAYFA 123 • ETKİNLİK 1 SORU 1 (ADIM ADIM TIKLAMALI KEŞİF)
+        // ------------------------------------------
+        function renderE1Explore(body, st) {
+            const leftList = [[32, 20], [32, 300], [32, 5000]];
+            const rightList = [[320, 20], [320, 300], [320, 5000]];
+
+            const makeBtn = ([a, b]) => {
+                const isAct = e1DemoPair.a === a && e1DemoPair.b === b;
+                return `<button class="ex-item-btn ${isAct ? 'active-ex' : ''}" data-pair="${a}_${b}" onclick="playExploreDemo(${a}, ${b})">
+                    <span>${a} × ${b} = <b>${fmtInt(a * b)}</b></span>
+                    <span class="ex-tag" style="font-size:11.5px;color:#008ca0;">${isAct ? '✨ Seçili' : '👆 Seç'}</span>
+                </button>`;
+            };
+
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        <b>1)</b> Örneklerden birini seç ve aşağıdaki <b>Adım Adım</b> butonuna tıklayarak kısa yoldan çarpmanın aşamalarını izle!
+                    </div>
+                </div>
+                <div class="examples-dual">
+                    <div class="ex-card">${leftList.map(makeBtn).join('')}</div>
+                    <div class="ex-card">${rightList.map(makeBtn).join('')}</div>
+                </div>
+                <div class="shortmul-stage">
+                    <div class="phase-pills">
+                        <span class="phase-pill" id="ep-1">1️⃣ 0'ları Yok Say</span>
+                        <span class="phase-pill" id="ep-2">2️⃣ Yuvarlak İçine Al</span>
+                        <span class="phase-pill" id="ep-3">✨ Eğri Ok &amp; Çarp</span>
+                        <span class="phase-pill" id="ep-4">3️⃣ 0'ları Sona Ekle</span>
+                    </div>
+                    <div id="explore-anim-box" style="width:100%; cursor:pointer;" onclick="stepExploreDemo()" title="Sonraki aşamaya geçmek için tıkla"></div>
+                    <div class="controls-row">
+                        <button class="btn-action green" id="btn-explore-step" onclick="stepExploreDemo()"></button>
+                        <button class="btn-action gray" onclick="resetExploreDemo()">↺ Başa Al</button>
+                    </div>
+                </div>
+                <div class="steps-stack">
+                    <div class="sub-step ${stepSolved[currentIdx] ? 'solved' : ''}">
+                        <div class="sub-q">🔍 İncelediğin işlemlerdeki ortak kısa yol özelliği hangisidir?</div>
+                        <div class="choice-row">
+                            <button class="choice-btn ${stepSolved[currentIdx] ? 'correct' : ''}" onclick="answerExplore(true, this)">Sondaki 0'lar yok sayılır, kalan kısımlar çarpılır ve yok sayılan 0'lar sonucun sağına eklenir.</button>
+                            <button class="choice-btn" onclick="answerExplore(false, this)">Sadece 1. sayı 10 ile çarpılır, 2. sayıdaki sıfırlar tamamen silinir.</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-bar ${stepSolved[currentIdx] ? 'visible' : ''}" id="post-bar"></div>
+            `;
+            refreshExploreUI();
+            if (stepSolved[currentIdx]) showPostBar(st.note);
+        }
+
+        function refreshExploreUI() {
+            const box = document.getElementById('explore-anim-box');
+            if (box) {
+                box.innerHTML = buildShortMulSVG(e1DemoPair.a, e1DemoPair.b, e1DemoPhase);
+                box.style.cursor = (e1DemoPhase === 2 || e1DemoPhase >= 4) ? 'default' : 'pointer';
+            }
+
+            // Seçili örnek butonunu yerinde güncelle (ekran kaymasın)
+            document.querySelectorAll('.ex-item-btn').forEach(btn => {
+                const isAct = btn.dataset.pair === `${e1DemoPair.a}_${e1DemoPair.b}`;
+                btn.classList.toggle('active-ex', isAct);
+                const tag = btn.querySelector('.ex-tag');
+                if (tag) tag.textContent = isAct ? '✨ Seçili' : '👆 Seç';
+            });
+
+            for (let i = 1; i <= 4; i++) {
+                const pill = document.getElementById('ep-' + i);
+                if (!pill) continue;
+                pill.classList.toggle('active', e1DemoPhase === i && i < 4);
+                pill.classList.toggle('done', e1DemoPhase > i || (i === 4 && e1DemoPhase >= 4));
+            }
+
+            const btn = document.getElementById('btn-explore-step');
+            if (btn) {
+                if (e1DemoPhase === 0) {
+                    btn.disabled = false;
+                    btn.innerText = "1️⃣ 0'ları Yok Say 👉";
+                } else if (e1DemoPhase === 1) {
+                    btn.disabled = false;
+                    btn.innerText = '2️⃣ Kalanları Yuvarlak İçine Al 👉';
+                } else if (e1DemoPhase === 2) {
+                    btn.disabled = true;
+                    btn.innerText = '✨ Çarpılıyor...';
+                } else if (e1DemoPhase === 3) {
+                    btn.disabled = false;
+                    btn.innerText = "3️⃣ Sona 0'ları Ekle 👉";
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = '✅ Tüm Adımlar Tamamlandı';
+                }
+            }
+        }
+
+        function playExploreDemo(a, b) {
+            initAudio();
+            playSound('tick');
+            clearAutoArcTimer();
+            e1DemoPair = { a, b };
+            e1DemoPhase = 0;
+            refreshExploreUI();
+        }
+
+        function stepExploreDemo() {
+            initAudio();
+            if (e1DemoPhase === 2 || e1DemoPhase >= 4) return;
+            if (e1DemoPhase === 0) {
+                e1DemoPhase = 1;
+                playSound('tick');
+                refreshExploreUI();
+            } else if (e1DemoPhase === 1) {
+                e1DemoPhase = 2;
+                playSound('tick');
+                refreshExploreUI();
+                // Yuvarlak içine alındıktan hemen sonra eğri ok kendiliğinden çizilsin
+                clearAutoArcTimer();
+                autoArcTimer = setTimeout(() => {
+                    e1DemoPhase = 3;
+                    playSound('swoosh');
+                    refreshExploreUI();
+                }, 720);
+            } else if (e1DemoPhase === 3) {
+                e1DemoPhase = 4;
+                playSound('correct');
+                launchConfetti('mini');
+                refreshExploreUI();
+            }
+        }
+
+        function resetExploreDemo() {
+            initAudio();
+            playSound('tick');
+            clearAutoArcTimer();
+            e1DemoPhase = 0;
+            refreshExploreUI();
+        }
+
+        function answerExplore(isOk, btn) {
+            initAudio();
+            const st = STEPS[currentIdx];
+            if (stepSolved[currentIdx]) return;
+            if (isOk) {
+                btn.classList.add('correct');
+                completeStep(st.note);
+                renderStep();
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ Üstteki örneklerden birini adım adım tıklayıp sıfırların nereye gittiğini tekrar izle!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 2) SAYFA 123 • SORU 2 (a-e) & ÖRNEK 1 (a-g) TIKLAMALI ADIM ADIM
+        // ------------------------------------------
+        function refreshShortMulUI(st) {
+            const solved = stepSolved[currentIdx];
+            const curPhase = solved ? 4 : animPhase;
+
+            const host = document.getElementById('shortmul-svg-host');
+            if (host) {
+                host.innerHTML = buildShortMulSVG(st.a, st.b, curPhase);
+                host.style.cursor = (solved || curPhase === 2 || curPhase >= 4) ? 'default' : 'pointer';
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const p = document.getElementById('pp-' + i);
+                if (!p) continue;
+                p.classList.toggle('active', !solved && curPhase === i && i < 4);
+                p.classList.toggle('done', solved || curPhase > i || (i === 4 && curPhase >= 4));
+            }
+
+            const stepBtn = document.getElementById('btn-step-shortmul');
+            if (stepBtn) {
+                stepBtn.classList.remove('green', 'teal');
+                if (solved) {
+                    stepBtn.disabled = true;
+                    stepBtn.classList.add('teal');
+                    stepBtn.innerText = '✅ İşlem Tamamlandı!';
+                } else if (curPhase === 0) {
+                    stepBtn.disabled = false;
+                    stepBtn.classList.add('green');
+                    stepBtn.innerText = "1️⃣ 0'ları Yok Say 👉";
+                } else if (curPhase === 1) {
+                    stepBtn.disabled = false;
+                    stepBtn.classList.add('green');
+                    stepBtn.innerText = '2️⃣ Kalanları Yuvarlak İçine Al 👉';
+                } else if (curPhase === 2) {
+                    stepBtn.disabled = true;
+                    stepBtn.classList.add('teal');
+                    stepBtn.innerText = '✨ Çarpılıyor...';
+                } else if (curPhase === 3) {
+                    stepBtn.disabled = false;
+                    stepBtn.classList.add('green');
+                    stepBtn.innerText = "3️⃣ Sona 0'ları Ekle 👉";
+                } else {
+                    stepBtn.disabled = true;
+                    stepBtn.classList.add('teal');
+                    stepBtn.innerText = '🎯 Hazır! Şimdi Alttan Sonucu İşaretle 👇';
+                }
+            }
+        }
+
+        function renderShortMulStep(body, st) {
+            const solved = stepSolved[currentIdx];
+            if (!solved && animPhase > 4) animPhase = 0;
+            const ansFormatted = fmtInt(st.a * st.b);
+
+            body.innerHTML = `
+                <div class="shortmul-stage">
+                    <div class="phase-pills">
+                        <span class="phase-pill" id="pp-1">1️⃣ 0'ları Yok Say</span>
+                        <span class="phase-pill" id="pp-2">2️⃣ Yuvarlak İçine Al</span>
+                        <span class="phase-pill" id="pp-3">✨ Eğri Ok &amp; Çarp</span>
+                        <span class="phase-pill" id="pp-4">3️⃣ 0'ları Sona Ekle</span>
+                    </div>
+                    <div id="shortmul-svg-host" style="width:100%;" onclick="advanceShortMulStep()" title="Bir sonraki adımı görmek için tıkla"></div>
+                    <div class="controls-row">
+                        <button class="btn-action green" id="btn-step-shortmul" onclick="advanceShortMulStep()"></button>
+                        <button class="btn-action gray" onclick="resetShortMulStep()">↺ Başa Al</button>
+                    </div>
+                </div>
+
+                <div class="steps-stack">
+                    <div class="sub-step ${solved ? 'solved' : ''}">
+                        <div class="sub-q">🎯 <b>${st.a} × ${st.b}</b> kısa yoldan çarpma işleminin sonucu kaçtır?</div>
+                        <div class="choice-row">
+                            ${st.opts.map(opt => `
+                                <button class="choice-btn ${solved && opt === ansFormatted ? 'correct' : ''}" onclick="checkShortMul('${opt}', this)">${opt}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="post-bar ${solved ? 'visible' : ''}" id="post-bar"></div>
+            `;
+            refreshShortMulUI(st);
+            if (solved) showPostBar(st.note);
+        }
+
+        function advanceShortMulStep() {
+            initAudio();
+            const st = STEPS[currentIdx];
+            if (stepSolved[currentIdx] || animPhase === 2 || animPhase >= 4) return;
+
+            if (animPhase === 0) {
+                animPhase = 1;
+                playSound('tick');
+                refreshShortMulUI(st);
+            } else if (animPhase === 1) {
+                animPhase = 2;
+                playSound('tick');
+                refreshShortMulUI(st);
+                // Yuvarlak içine alındıktan hemen sonra eğri ok çizilip sıfırsız çarpım (ör. 64) yazılsın
+                clearAutoArcTimer();
+                autoArcTimer = setTimeout(() => {
+                    if (STEPS[currentIdx] !== st || stepSolved[currentIdx]) return;
+                    animPhase = 3;
+                    playSound('swoosh');
+                    refreshShortMulUI(st);
+                }, 720);
+            } else if (animPhase === 3) {
+                animPhase = 4;
+                playSound('correct');
+                launchConfetti('mini');
+                refreshShortMulUI(st);
+            }
+        }
+
+        function resetShortMulStep() {
+            initAudio();
+            playSound('tick');
+            clearAutoArcTimer();
+            animPhase = 0;
+            refreshShortMulUI(STEPS[currentIdx]);
+        }
+
+        function checkShortMul(picked, btn) {
+            initAudio();
+            const st = STEPS[currentIdx];
+            if (stepSolved[currentIdx]) return;
+            const correctStr = fmtInt(st.a * st.b);
+
+            if (picked === correctStr) {
+                clearAutoArcTimer();
+                animPhase = 4;
+                btn.classList.add('correct');
+                completeStep(st.note);
+                refreshShortMulUI(st);
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ Yuvarlak içindeki çarpıma ve sonuna eklenecek sıfır sayısına tekrar dikkat et!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 3) GENEL QUİZ ADIMI (SORU 3)
+        // ------------------------------------------
+        function renderQuizStep(body, st) {
+            const solved = stepSolved[currentIdx];
+            body.innerHTML = `
+                <div class="scenario-card"><div class="scenario-text">${st.scenario}</div></div>
+                <div class="steps-stack">
+                    <div class="sub-step ${solved ? 'solved' : ''}">
+                        <div class="sub-q">${st.q}</div>
+                        <div class="choice-row" style="flex-direction:column;">
+                            ${st.opts.map(o => `
+                                <button class="choice-btn ${solved && o.k === st.ans ? 'correct' : ''}" style="justify-content:flex-start; text-align:left;" onclick="checkGenericQuiz('${o.k}', this)">
+                                    <b>${o.k})</b> ${o.t}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="post-bar ${solved ? 'visible' : ''}" id="post-bar"></div>
+            `;
+            if (solved) showPostBar(st.note);
+        }
+
+        function checkGenericQuiz(k, btn) {
+            initAudio();
+            const st = STEPS[currentIdx];
+            if (stepSolved[currentIdx]) return;
+            if (k === st.ans) {
+                btn.classList.add('correct');
+                completeStep(st.note);
+                renderStep();
+            } else {
+                playSound('wrong');
+                btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ Bir kez daha düşünelim!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 4) SAYFA 126 • PROBLEM 13 (AYAKKABI ATÖLYESİ)
+        // ------------------------------------------
+        function renderProb13(body, st) {
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        👞 <b>Problem 13:</b> Bir ayakkabı atölyesinde günde <b>98 çift</b> ayakkabı üretilmektedir. Buna göre bu atölyede bir yılda toplam kaç ayakkabı üretileceğini <b>önce tahmin ediniz</b>. Daha sonra <b>gerçek sonucu</b> bulup tahmininizle karşılaştırınız. <i>(1 yıl = 365 gün)</i>
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <div style="font-weight:900; color:#007c91; font-size:15px;">👞 Ayakkabı Atölyesi Üretim Bandı</div>
+                        <svg viewBox="0 0 320 145" style="width:100%; max-width:320px; height:auto;">
+                            <rect x="14" y="18" width="292" height="112" rx="14" fill="#fffbeb" stroke="#f59e0b" stroke-width="2.5"/>
+                            <!-- Ayakkabı kalıbı çizimi -->
+                            <path d="M46,96 L112,96 Q128,96 126,84 Q124,74 102,72 L86,52 L54,52 L46,78 Z" fill="#d97706" stroke="#78350f" stroke-width="2.5"/>
+                            <path d="M46,96 L126,96 L126,104 L46,104 Z" fill="#78350f"/>
+                            <text x="86" y="42" text-anchor="middle" font-size="13" font-weight="900" fill="#92400e">Günde 98 Çift</text>
+                            <text x="160" y="84" text-anchor="middle" font-size="24" font-weight="900" fill="#00acc1">×</text>
+                            <rect x="184" y="46" width="104" height="58" rx="10" fill="#e0f7fa" stroke="#00acc1" stroke-width="2.2"/>
+                            <text x="236" y="72" text-anchor="middle" font-size="18" font-weight="900" fill="#007c91">365 Gün</text>
+                            <text x="236" y="92" text-anchor="middle" font-size="12" font-weight="800" fill="#475569">(1 Yıl)</text>
+                        </svg>
+                        <div style="font-size:13.5px; font-weight:800; color:#475569; text-align:center;">
+                            💡 Kısa yoldan tahmin için 98'i en yakın yüzlüğe (<b>100</b>) yuvarlayabilirsin!
+                        </div>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${p13Sub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">1) 98'i <b>100</b>'e yuvarlayarak 1 yıllık üretimi tahmin et (100 × 365):</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP13(1, false, this)">3 650</button>
+                                    <button class="choice-btn ${p13Sub >= 1 ? 'correct' : ''}" onclick="checkP13(1, true, this)"><b>36 500</b></button>
+                                    <button class="choice-btn" onclick="checkP13(1, false, this)">365 000</button>
+                                </div>
+                            </div>
+                            <div class="sub-step ${p13Sub < 1 ? 'locked' : ''} ${p13Sub >= 2 ? 'solved' : ''}">
+                                <div class="sub-q">2) Gerçek üretim sonucu (<b>98 × 365</b>) kaç çifttir?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP13(2, false, this)">34 870</button>
+                                    <button class="choice-btn ${p13Sub >= 2 ? 'correct' : ''}" onclick="checkP13(2, true, this)"><b>35 770</b></button>
+                                    <button class="choice-btn" onclick="checkP13(2, false, this)">36 120</button>
+                                </div>
+                            </div>
+                            <div class="sub-step ${p13Sub < 2 ? 'locked' : ''} ${p13Sub >= 3 ? 'solved' : ''}">
+                                <div class="sub-q">3) Karşılaştırma: Tahmin (36 500) ile gerçek sonuç (35 770) arasındaki fark kaçtır?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn ${p13Sub >= 3 ? 'correct' : ''}" onclick="checkP13(3, true, this)"><b>730 fazla</b></button>
+                                    <button class="choice-btn" onclick="checkP13(3, false, this)">365 fazla</button>
+                                    <button class="choice-btn" onclick="checkP13(3, false, this)">730 eksik</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p13Sub >= 3 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p13Sub >= 3) showPostBar(st.note);
+        }
+
+        function checkP13(sub, isOk, btn) {
+            initAudio();
+            if (p13Sub >= sub) return;
+            if (isOk) {
+                p13Sub = sub;
+                score += 25;
+                if (sub === 3) completeStep(STEPS[currentIdx].note);
+                else { playSound('correct'); launchConfetti('mini'); }
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ İşlemi tekrar kontrol edelim!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 5) SAYFA 126 • PROBLEM 14 (FİDAN DİKME KAMPANYASI)
+        // ------------------------------------------
+        function renderProb14(body, st) {
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        🌲 <b>Problem 14:</b> Bir ortaokulun bahçesine <b>175 adet çam ağacı</b> ve <b>30 adet elma fidanı</b> dikilecektir. Tabloya göre toplam kaç TL ödenmesi gerektiğini <b>önce tahmin ediniz</b>, sonra <b>gerçek sonuçla</b> karşılaştırınız.
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <table class="book-table">
+                            <tr><th>Fidan Çeşidi</th><th>Adet</th><th>Birim Fiyatı (TL)</th></tr>
+                            <tr><td>🌲 Çam</td><td>175</td><td><b>209 TL</b></td></tr>
+                            <tr><td>🍎 Elma</td><td>30</td><td><b>315 TL</b></td></tr>
+                        </table>
+                        <svg viewBox="0 0 320 110" style="width:100%; max-width:310px; height:auto; cursor:pointer;" onclick="plantTrees14()">
+                            <rect x="8" y="76" width="304" height="28" rx="8" fill="#86efac" stroke="#16a34a" stroke-width="2"/>
+                            ${p14Planted ? `
+                                <g class="result-zeros-pop">
+                                    <polygon points="56,76 74,26 92,76" fill="#15803d"/><rect x="70" y="76" width="8" height="12" fill="#78350f"/>
+                                    <polygon points="108,76 126,22 144,76" fill="#16a34a"/><rect x="122" y="76" width="8" height="12" fill="#78350f"/>
+                                    <circle cx="220" cy="48" r="22" fill="#22c55e"/><rect x="216" y="68" width="8" height="18" fill="#78350f"/>
+                                    <circle cx="212" cy="44" r="4" fill="#ef4444"/><circle cx="228" cy="52" r="4" fill="#ef4444"/>
+                                    <text x="98" y="18" text-anchor="middle" font-size="11.5" font-weight="900" fill="#14532d">175 Çam Dikildi!</text>
+                                    <text x="224" y="18" text-anchor="middle" font-size="11.5" font-weight="900" fill="#b91c1c">30 Elma Dikildi!</text>
+                                </g>
+                            ` : `
+                                <text x="160" y="54" text-anchor="middle" font-size="14" font-weight="900" fill="#15803d">👆 Bahçeye Fidanları Dikmek İçin Tıkla!</text>
+                            `}
+                        </svg>
+                        <button class="btn-action green" onclick="plantTrees14()" ${p14Planted ? 'disabled' : ''}>
+                            ${p14Planted ? '✅ Fidanlar Bahçeye Dikildi!' : '🌱 Fidanları Dik (175 Çam + 30 Elma)'}
+                        </button>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${!p14Planted ? 'locked' : ''} ${p14Sub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">1) Tahmin: 175→180, 209→200 ve 315→300 yuvarlarsak tahmini toplam (180×200 + 30×300):</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP14(1, false, this)">39 000 TL</button>
+                                    <button class="choice-btn ${p14Sub >= 1 ? 'correct' : ''}" onclick="checkP14(1, true, this)"><b>45 000 TL</b></button>
+                                    <button class="choice-btn" onclick="checkP14(1, false, this)">51 000 TL</button>
+                                </div>
+                            </div>
+                            <div class="sub-step ${p14Sub < 1 ? 'locked' : ''} ${p14Sub >= 2 ? 'solved' : ''}">
+                                <div class="sub-q">2) Gerçek Sonuç: Çam (175×209) + Elma (30×315) toplam kaç TL ödenir?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP14(2, false, this)">44 925 TL</button>
+                                    <button class="choice-btn ${p14Sub >= 2 ? 'correct' : ''}" onclick="checkP14(2, true, this)"><b>46 025 TL</b></button>
+                                    <button class="choice-btn" onclick="checkP14(2, false, this)">47 125 TL</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p14Sub >= 2 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p14Sub >= 2) showPostBar(st.note);
+        }
+
+        function plantTrees14() {
+            initAudio();
+            if (p14Planted) return;
+            p14Planted = true;
+            playSound('correct');
+            launchConfetti('mini');
+            renderStep();
+        }
+
+        function checkP14(sub, isOk, btn) {
+            initAudio();
+            if (p14Sub >= sub) return;
+            if (isOk) {
+                p14Sub = sub;
+                score += 30;
+                if (sub === 2) completeStep(STEPS[currentIdx].note);
+                else { playSound('correct'); launchConfetti('mini'); }
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ Çam ve elma fidanlarının tutarlarını ayrı ayrı çarpıp toplayalım!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 6) SAYFA 127 • PROBLEM 15 (ZEYTİN BAHÇESİ)
+        // ------------------------------------------
+        function renderProb15(body, st) {
+            const bothHarv = p15HarvestA && p15HarvestB;
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        🫒 <b>Problem 15:</b> Bir zeytin bahçesinde toplam <b>150 zeytin ağacı</b> vardır. Bu ağaçların <b>115 tanesinin</b> her birinden ortalama <b>40 kg</b>, <b>kalan ağaçların</b> her birinden ortalama <b>35 kg</b> zeytin toplanmıştır. Toplam zeytin miktarı kaç kg'dır?
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <div style="font-weight:900; color:#0f766e; font-size:15px;">🌳 150 Ağaçlık Zeytin Bahçesi (İki Bölgeyi Topla!)</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%;">
+                            <button class="btn-action ${p15HarvestA ? 'green' : ''}" style="flex-direction:column; padding:12px 8px; white-space:normal;" onclick="harvestZone('A')">
+                                <span style="font-size:24px;">🫒</span>
+                                <span>1. Bölge: 115 Ağaç</span>
+                                <span style="font-size:12px;">Ağaç başı 40 kg</span>
+                                <span>${p15HarvestA ? '✅ 4 600 kg' : '👆 Hasat Et'}</span>
+                            </button>
+                            <button class="btn-action ${p15HarvestB ? 'green' : 'teal'}" style="flex-direction:column; padding:12px 8px; white-space:normal;" onclick="harvestZone('B')">
+                                <span style="font-size:24px;">🧺</span>
+                                <span>2. Bölge: 150 - 115 = 35 Ağaç</span>
+                                <span style="font-size:12px;">Ağaç başı 35 kg</span>
+                                <span>${p15HarvestB ? '✅ 1 225 kg' : '👆 Hasat Et'}</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${!bothHarv ? 'locked' : ''} ${p15Sub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">🏆 Bahçeden elde edilen <b>toplam zeytin miktarı</b> ortalama kaç kilogramdır?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP15(false, this)">5 425 kg</button>
+                                    <button class="choice-btn ${p15Sub >= 1 ? 'correct' : ''}" onclick="checkP15(true, this)"><b>5 825 kg</b></button>
+                                    <button class="choice-btn" onclick="checkP15(false, this)">6 025 kg</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p15Sub >= 1 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p15Sub >= 1) showPostBar(st.note);
+        }
+
+        function harvestZone(z) {
+            initAudio();
+            if (z === 'A') p15HarvestA = true;
+            else p15HarvestB = true;
+            playSound('correct');
+            launchConfetti('mini');
+            renderStep();
+        }
+
+        function checkP15(isOk, btn) {
+            initAudio();
+            if (p15Sub >= 1) return;
+            if (isOk) {
+                p15Sub = 1;
+                score += 40;
+                completeStep(STEPS[currentIdx].note);
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ 4 600 + 1 225 toplamını tekrar kontrol edelim!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 7) SAYFA 127 • PROBLEM 16 (ŞUBAT 2024 DAMACANA TAKVİMİ)
+        // ------------------------------------------
+        function renderProb16(body, st) {
+            const allDaysMarked = (p16Marked.length === P16_TARGETS.length);
+            const dows = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
+
+            // Şubat 2024: 1 Şubat Perşembe (index 3), 29 gün
+            let cellsHtml = dows.map((d, i) => `<div class="cal-dow ${i >= 5 ? 'wknd' : ''}">${d}</div>`).join('');
+            for (let b = 0; b < 3; b++) cellsHtml += `<div class="cal-day empty"></div>`;
+            for (let day = 1; day <= 29; day++) {
+                const isGiven = P16_GIVEN.includes(day);
+                const isMarked = p16Marked.includes(day);
+                const cls = `cal-day ${isGiven ? 'given' : (isMarked ? 'marked' : '')}`;
+                cellsHtml += `<div class="${cls}" onclick="clickCalDay(${day}, this)">${day}</div>`;
+            }
+
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        💧 <b>Problem 16:</b> Hüseyin Bey'in Şubat 2024'te damacana su siparişi verdiği ilk dört gün (<b>4, 7, 10, 13</b>) işaretlenmiştir. Aynı aralıklarla devam etmiştir. 1 damacana <b>80 TL</b> iken <b>15 Şubat'ta 85 TL</b> olmuştur. Toplam kaç TL ödeme yapmıştır?
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <div style="font-weight:900; color:#0284c7; font-size:14px;">📅 Kalan Sipariş Günlerine Takvimde Tıkla! (${p16Marked.length}/5)</div>
+                        <div class="calendar-card">
+                            <div class="cal-head"><span>ŞUBAT</span><span>2024</span></div>
+                            <div class="cal-grid">${cellsHtml}</div>
+                        </div>
+                        <div style="font-size:12.5px; font-weight:800; color:#475569;">
+                            🟥 15 Şubat öncesi: 4 gün (80 TL) • 🟩 15 Şubat sonrası: ${p16Marked.length}/5 gün (85 TL)
+                        </div>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${!allDaysMarked ? 'locked' : ''} ${p16Sub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">💰 Hüseyin Bey Şubat ayında sipariş verdiği sulara toplam kaç TL ödeme yapmıştır?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP16(false, this)">720 TL</button>
+                                    <button class="choice-btn ${p16Sub >= 1 ? 'correct' : ''}" onclick="checkP16(true, this)"><b>745 TL</b></button>
+                                    <button class="choice-btn" onclick="checkP16(false, this)">765 TL</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p16Sub >= 1 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p16Sub >= 1) showPostBar(st.note);
+        }
+
+        function clickCalDay(day, el) {
+            initAudio();
+            if (P16_GIVEN.includes(day) || p16Marked.includes(day)) return;
+            if (P16_TARGETS.includes(day)) {
+                p16Marked.push(day);
+                playSound('correct');
+                launchConfetti('mini');
+                if (p16Marked.length === P16_TARGETS.length) {
+                    showToast('🎉 Harika! 16, 19, 22, 25 ve 28 Şubat işaretlendi! Şimdi toplam ödemeyi bul!', 'ok');
+                }
+                renderStep();
+            } else {
+                playSound('wrong');
+                el.classList.add('wrong-day');
+                setTimeout(() => el.classList.remove('wrong-day'), 380);
+                showToast('✖ Dikkat! 4 → 7 → 10 → 13 (+3 gün aralıkla) devam ediyor!', 'err');
+            }
+        }
+
+        function checkP16(isOk, btn) {
+            initAudio();
+            if (p16Sub >= 1) return;
+            if (isOk) {
+                p16Sub = 1;
+                score += 40;
+                completeStep(STEPS[currentIdx].note);
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ 4×80 = 320 TL ve 5×85 = 425 TL toplamını hesaplayalım!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 8) SAYFA 128 • PROBLEM 17 (KİTAP OKUMA YARIŞI)
+        // ------------------------------------------
+        function renderProb17(body, st) {
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        📚 <b>Problem 17:</b> Burak, <b>1120 sayfalık</b> kitabı her gün <b>35 sayfa</b>; Merve, <b>945 sayfalık</b> kitabı her gün <b>27 sayfa</b> okuyarak bitirmiştir. Kitabı <b>ilk bitiren kişinin</b> kaç günde bitirdiğini önce tahmin edip sonra gerçek sonucu bulunuz.
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <div style="font-weight:900; color:#007c91; font-size:15px;">📖 Okuma Yarışı Modeli</div>
+                        <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
+                            <div style="background:#fff; border:2.5px solid #00b4cc; border-radius:12px; padding:10px;">
+                                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:14px;">
+                                    <span>👦🏻 Burak (1120 sayfa • 35 s/gün)</span>
+                                    <span style="color:#008ca0;">${p17Sub >= 2 ? '🏆 32 Gün' : '? Gün'}</span>
+                                </div>
+                                <div style="height:12px; background:#e0f7fa; border-radius:8px; margin-top:6px; overflow:hidden;">
+                                    <div style="height:100%; width:${p17Sub >= 2 ? '100%' : '65%'}; background:#00b4cc; transition:width 0.4s;"></div>
+                                </div>
+                            </div>
+                            <div style="background:#fff; border:2.5px solid #f472b6; border-radius:12px; padding:10px;">
+                                <div style="display:flex; justify-content:space-between; font-weight:900; font-size:14px;">
+                                    <span>👧🏻 Merve (945 sayfa • 27 s/gün)</span>
+                                    <span style="color:#db2777;">${p17Sub >= 2 ? '35 Gün' : '? Gün'}</span>
+                                </div>
+                                <div style="height:12px; background:#fce7f3; border-radius:8px; margin-top:6px; overflow:hidden;">
+                                    <div style="height:100%; width:${p17Sub >= 2 ? '92%' : '58%'}; background:#ec4899; transition:width 0.4s;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${p17Sub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">1) Tahmin: Sayıları en yakın yüzlük/onluğa yuvarlayarak (Burak≈1100÷40, Merve≈900÷30) yaklaşık kaç günde biter?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP17(1, false, this)">15 gün civarı</button>
+                                    <button class="choice-btn ${p17Sub >= 1 ? 'correct' : ''}" onclick="checkP17(1, true, this)"><b>30 gün civarı</b></button>
+                                    <button class="choice-btn" onclick="checkP17(1, false, this)">60 gün civarı</button>
+                                </div>
+                            </div>
+                            <div class="sub-step ${p17Sub < 1 ? 'locked' : ''} ${p17Sub >= 2 ? 'solved' : ''}">
+                                <div class="sub-q">2) Gerçek sonuçlara göre kitabı <b>ilk bitiren kişi</b> ve süresi hangisidir?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn ${p17Sub >= 2 ? 'correct' : ''}" onclick="checkP17(2, true, this)"><b>Burak • 32 gün</b></button>
+                                    <button class="choice-btn" onclick="checkP17(2, false, this)">Merve • 35 gün</button>
+                                    <button class="choice-btn" onclick="checkP17(2, false, this)">Burak • 34 gün</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p17Sub >= 2 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p17Sub >= 2) showPostBar(st.note);
+        }
+
+        function checkP17(sub, isOk, btn) {
+            initAudio();
+            if (p17Sub >= sub) return;
+            if (isOk) {
+                p17Sub = sub;
+                score += 30;
+                if (sub === 2) completeStep(STEPS[currentIdx].note);
+                else { playSound('correct'); launchConfetti('mini'); }
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ 1120 ÷ 35 ve 945 ÷ 27 bölme işlemlerini tekrar yapalım!', 'err');
+            }
+        }
+
+        // ------------------------------------------
+        // 9) SAYFA 128 • PROBLEM 18 (a) & (b) (SÜT TOPLAMA MERKEZİ)
+        // ------------------------------------------
+        function renderProb18a(body, st) {
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        🐄 <b>Problem 18 (a):</b> Çiftçilerin günlük sağdığı süt miktarları tabloda verilmiştir. Süt toplama merkezinin <b>1520 litre</b> süte ihtiyacı olduğuna göre bu miktarı <b>en erken karşılayabilecek kişi</b> kaç günde tamamlar?
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <table class="book-table">
+                            <tr><th>Kişiler</th><th>Günlük Sağılan Süt (L)</th></tr>
+                            <tr><td>Ahmet</td><td>30 L</td></tr>
+                            <tr><td><b>Havva</b></td><td><b>38 L</b></td></tr>
+                            <tr><td>Mustafa</td><td>32 L</td></tr>
+                            <tr><td>Zeynep</td><td>28 L</td></tr>
+                        </table>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${p18aSub >= 1 ? 'solved' : ''}">
+                                <div class="sub-q">1) 1520 L sütü <b>en erken</b> kim karşılayabilir?</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP18a(1, false, this)">Ahmet (30 L)</button>
+                                    <button class="choice-btn ${p18aSub >= 1 ? 'correct' : ''}" onclick="checkP18a(1, true, this)"><b>Havva (38 L)</b></button>
+                                    <button class="choice-btn" onclick="checkP18a(1, false, this)">Zeynep (28 L)</button>
+                                </div>
+                            </div>
+                            <div class="sub-step ${p18aSub < 1 ? 'locked' : ''} ${p18aSub >= 2 ? 'solved' : ''}">
+                                <div class="sub-q">2) Havva <b>1520 litre</b> sütü kaç günde tamamlar? (1520 ÷ 38)</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP18a(2, false, this)">35 gün</button>
+                                    <button class="choice-btn ${p18aSub >= 2 ? 'correct' : ''}" onclick="checkP18a(2, true, this)"><b>40 gün</b></button>
+                                    <button class="choice-btn" onclick="checkP18a(2, false, this)">45 gün</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${p18aSub >= 2 ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (p18aSub >= 2) showPostBar(st.note);
+        }
+
+        function checkP18a(sub, isOk, btn) {
+            initAudio();
+            if (p18aSub >= sub) return;
+            if (isOk) {
+                p18aSub = sub;
+                score += 25;
+                if (sub === 2) completeStep(STEPS[currentIdx].note);
+                else { playSound('correct'); launchConfetti('mini'); }
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ En erken bitirmek için günde en çok süt sağan kişiyi seçmeliyiz!', 'err');
+            }
+        }
+
+        function renderProb18b(body, st) {
+            const solved = stepSolved[currentIdx];
+            body.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-text">
+                        🚛 <b>Problem 18 (b):</b> Süt toplama merkezinin <b>5760 litre</b> süte ihtiyacı olduğunda <b>tüm kişiler birlikte</b> (Ahmet 30 + Havva 38 + Mustafa 32 + Zeynep 28) bu ihtiyacı kaç günde tamamlar?
+                    </div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="model-box">
+                        <div style="font-weight:900; color:#007c91; font-size:15px;">🚛 Ortak Süt Tankeri (Günlük Toplam)</div>
+                        <div style="font-size:15px; font-weight:900; color:#1e3a5f; background:#fff; border:2.5px solid #00b4cc; border-radius:12px; padding:10px 14px; text-align:center;">
+                            30 + 38 + 32 + 28 = <b style="color:#0d9488; font-size:20px;">${p18bTankFilled ? '128 L / gün' : '? L / gün'}</b>
+                        </div>
+                        <button class="btn-action green" onclick="fillTank18b()" ${p18bTankFilled ? 'disabled' : ''}>
+                            ${p18bTankFilled ? '✅ Günlük 128 L Tankere Aktarıldı!' : '🥛 4 Çiftçinin Sütünü Tankerde Birleştir'}
+                        </button>
+                    </div>
+                    <div class="right-box">
+                        <div class="steps-stack">
+                            <div class="sub-step ${!p18bTankFilled ? 'locked' : ''} ${solved ? 'solved' : ''}">
+                                <div class="sub-q">🏆 Tüm kişiler birlikte <b>5760 litre</b> sütü kaç günde tamamlar? (5760 ÷ 128)</div>
+                                <div class="choice-row">
+                                    <button class="choice-btn" onclick="checkP18b(false, this)">40 gün</button>
+                                    <button class="choice-btn ${solved ? 'correct' : ''}" onclick="checkP18b(true, this)"><b>45 gün</b></button>
+                                    <button class="choice-btn" onclick="checkP18b(false, this)">50 gün</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-bar ${solved ? 'visible' : ''}" id="post-bar"></div>
+                    </div>
+                </div>
+            `;
+            if (solved) showPostBar(st.note);
+        }
+
+        function fillTank18b() {
+            initAudio();
+            p18bTankFilled = true;
+            playSound('correct');
+            launchConfetti('mini');
+            renderStep();
+        }
+
+        function checkP18b(isOk, btn) {
+            initAudio();
+            if (stepSolved[currentIdx]) return;
+            if (isOk) {
+                btn.classList.add('correct');
+                completeStep(STEPS[currentIdx].note);
+                renderStep();
+            } else {
+                playSound('wrong'); btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 380);
+                showToast('✖ 5760 ÷ 128 işlemini tekrar kontrol edelim!', 'err');
+            }
+        }
+
+        // ==========================================
+        // TAMAMLANMA & KONTROLLÜ BİLGİ KUTUSU
+        // ==========================================
+        function completeStep(noteHtml) {
+            if (!stepSolved[currentIdx]) {
+                stepSolved[currentIdx] = true;
+                score += 50;
+            }
+            playSound('fanfare');
+            launchConfetti('big');
+            updateHUD();
+            showPostBar(noteHtml);
+        }
+
+        function showPostBar(noteHtml) {
+            currentModalNote = noteHtml;
+            const bar = document.getElementById('post-bar');
+            if (!bar) return;
+            const isLast = (currentIdx === STEPS.length - 1);
+            bar.innerHTML = `
+                <button class="btn-action" onclick="openInfoModal()">💡 Bilgi Kutusunu Aç</button>
+                <button class="btn-action pink" onclick="nextStep()">${isLast ? '🏆 Atölyeyi Tamamla' : 'Sonraki Soru ➡️'}</button>
+            `;
+            bar.classList.add('visible');
+        }
+
+        function openInfoModal() {
+            playSound('tick');
+            document.getElementById('info-modal-text').innerHTML = currentModalNote;
+            const nextBtn = document.getElementById('info-modal-next');
+            nextBtn.innerText = currentIdx === STEPS.length - 1 ? '🏆 Atölyeyi Tamamla' : 'Sonraki Soru ➡️';
+            nextBtn.onclick = () => { closeInfoModal(); nextStep(); };
+            document.getElementById('info-modal').classList.add('open');
+        }
+
+        function closeInfoModal() {
+            playSound('tick');
+            document.getElementById('info-modal').classList.remove('open');
+        }
+
+        function showFinalCelebration() {
+            playSound('fanfare');
+            launchConfetti('big');
+            document.getElementById('info-modal-text').innerHTML = `
+                <b>Tebrikler! 🏆🎉</b><br><br>
+                Sayfa 123, 126, 127 ve 128'deki tüm <b>Kısa Yoldan Çarpma</b> ve <b>Gerçek Yaşam Problemleri</b> etkinliklerini eksiksiz tamamladın!<br><br>
+                Toplam Puanın: <b>${score} ⭐</b>
+            `;
+            const nextBtn = document.getElementById('info-modal-next');
+            nextBtn.innerText = '🔄 Baştan Oyna';
+            nextBtn.onclick = () => {
+                closeInfoModal();
+                score = 0;
+                stepSolved = Array(STEPS.length).fill(false);
+                e1DemoPhase = 0; animPhase = 0;
+                p13Sub = 0; p14Planted = false; p14Sub = 0;
+                p15HarvestA = false; p15HarvestB = false; p15Sub = 0;
+                p16Marked = []; p16Sub = 0; p17Sub = 0; p18aSub = 0; p18bTankFilled = false;
+                jumpStep(0);
+            };
+            document.getElementById('info-modal').classList.add('open');
+        }
+
+        // ==========================================
+        // TOAST & BOLCA KONFETİ
+        // ==========================================
+        let toastTimer = null;
+        function showToast(msg, type = '') {
+            const el = document.getElementById('toast');
+            el.innerText = msg;
+            el.className = 'show' + (type ? ' ' + type : '');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        const cCanvas = document.getElementById('confetti-canvas');
+        const cCtx = cCanvas.getContext('2d');
+        let confetti = [];
+        let animId = null;
+
+        function launchConfetti(size) {
+            cCanvas.width = window.innerWidth;
+            cCanvas.height = window.innerHeight;
+            const colors = ['#00b4cc', '#f472b6', '#ffca28', '#14b8a6', '#8b5cf6', '#fb7185'];
+            const count = size === 'big' ? 120 : 24;
+            for (let i = 0; i < count; i++) {
+                confetti.push({
+                    x: cCanvas.width * (size === 'big' ? (0.2 + Math.random() * 0.6) : 0.5),
+                    y: cCanvas.height * 0.45,
+                    vx: (Math.random() - 0.5) * 20,
+                    vy: -(Math.random() * 14 + 5),
+                    r: Math.random() * 5.5 + 3,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 1
+                });
+            }
+            if (!animId) animateConfetti();
+        }
+
+        function animateConfetti() {
+            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+            confetti = confetti.filter(p => p.life > 0);
+            confetti.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.45;
+                p.life -= 0.017;
+                cCtx.globalAlpha = Math.max(0, p.life);
+                cCtx.fillStyle = p.color;
+                cCtx.fillRect(p.x, p.y, p.r * 1.5, p.r);
+            });
+            cCtx.globalAlpha = 1;
+            if (confetti.length > 0) animId = requestAnimationFrame(animateConfetti);
+            else { cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); animId = null; }
+        }
+
+        window.onload = function () {
+            renderStep();
+        };
+    </script>
+</body>
+</html>
